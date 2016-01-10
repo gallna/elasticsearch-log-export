@@ -1,0 +1,15 @@
+{
+  "name": "s3-exporter",
+  "private": true,
+  "version": "0.0.0",
+  "description": "S3 to elasticsearch exporter",
+  "repository": "https://github.com/gallna/elasticsearch-log-export",
+  "license": "MIT",
+  "devDependencies": {
+    "aws-sdk": "*"
+  },
+  "scripts": {
+    "prestart": "npm install",
+    "start": "node server.js"
+  }
+}
