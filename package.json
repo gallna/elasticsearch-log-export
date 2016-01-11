@@ -6,9 +6,7 @@
   "repository": "https://github.com/gallna/elasticsearch-log-export",
   "license": "MIT",
   "devDependencies": {
-    "aws-sdk": "*",
-    "memwatch": "*",
-    "heapdump": "*"
+    "aws-sdk": "*"
   },
   "scripts": {
     "prestart": "npm install",
