@@ -31,7 +31,7 @@ function exportList (bucket, prefix, host, uri) {
         host,
         uri
     );
-    handler.handle(prefix);
+    return handler.handle(prefix);
 }
 
 function exportFromS3 (bucket, prefix, esConfig) {
@@ -39,7 +39,7 @@ function exportFromS3 (bucket, prefix, esConfig) {
         new S3(bucket, process.env.ACCESS_KEY_ID, process.env.SECRET_ACCESS_KEY),
         new Processor(esConfig, new Elasticsearch(esConfig))
     );
-    handler.handle(prefix);
+    return handler.handle(prefix);
 }
 
 //We need a function which handles requests and send response
