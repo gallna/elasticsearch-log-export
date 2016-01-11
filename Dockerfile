@@ -6,5 +6,3 @@ COPY . /data
 WORKDIR /data
 
 EXPOSE 8089
-
-CMD ["npm", "start"]

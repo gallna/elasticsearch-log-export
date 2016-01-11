@@ -4,6 +4,7 @@ module.exports = function(s3, processor) {
     this.handle = function(prefix) {
         console.log("Prefix: '" + prefix);
         s3.listObjects(prefix, this.processList);
+        return;
     },
 
     this.processList = function(err, data) {
