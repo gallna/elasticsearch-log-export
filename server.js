@@ -37,8 +37,7 @@ function exportList (bucket, prefix, host, uri) {
 function exportFromS3 (bucket, prefix, esConfig) {
     var handler = new Handler(
         new S3(bucket, process.env.ACCESS_KEY_ID, process.env.SECRET_ACCESS_KEY),
-        new Processor(esConfig, new Elasticsearch(esConfig)),
-        ObjectHandler
+        new Processor(esConfig, new Elasticsearch(esConfig))
     );
     handler.handle(prefix);
 }

@@ -1,10 +1,17 @@
 var http = require('http');
 
-function sendRequest (requestParams, body, context) {
+function sendRequest (requestParams) {
     var request = http.request(requestParams, function(response) {
-        var listener = new responseListener(response);
-        response.on('data', listener.onData);
-        response.on('end', listener.onEnd.bind( {"context": context} ));
+        // var listener = new responseListener(response);
+        // response.on('data', listener.onData);
+        // response.on('end', listener.onEnd.bind( {"context": context} ));
+        response.on('end', function() {
+            if (response.statusCode >= 200 && response.statusCode < 299) {
+                console.log("OK");
+            } else {
+                console.log("fail");
+            }
+        });
     }).on('error', function(e) {
         console.log(e);
         console.log('Elasticsearch error: ' + JSON.stringify(e, null, 2));
@@ -23,6 +30,12 @@ function responseListener (response) {
         },
 
         onEnd: function() {
+            if (response.statusCode >= 200 && response.statusCode < 299) {
+                console.log("OK");
+            } else {
+                console.log("fail");
+            }
+            return;
             var info = JSON.parse(responseBody);
             var failedItems;
             var success;
@@ -85,9 +98,9 @@ var esConfig = {
 module.exports = function (esConfig) {
     return {
         "config": esConfig,
-        "send": function (body, context) {
+        "send": function (body) {
             var requestParams = buildRequest(this.config.endpoint, this.config.port, body);
-            sendRequest(requestParams, body, context);
+            sendRequest(requestParams);
         }
     };
 };

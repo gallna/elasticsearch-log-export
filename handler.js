@@ -1,5 +1,6 @@
 
-module.exports = function(s3, processor, objectHandler) {
+
+module.exports = function(s3, processor) {
     this.handle = function(prefix) {
         console.log("Prefix: '" + prefix);
         s3.listObjects(prefix, this.processList);
@@ -12,8 +13,10 @@ module.exports = function(s3, processor, objectHandler) {
             console.log("Recieved '" + data.Name + "." + data.Prefix + "' list ");
             //data.Contents.forEach(this.processObject);
             data.Contents.forEach(function(object) {
-                var objHandler = new objectHandler(object, s3, processor);
+                var ObjectHandler = require('./handler/base-handler.js');
+                var objHandler = new ObjectHandler(object, s3, processor);
                 objHandler.handle();
+                objHandler = null;
             });
         }
     };

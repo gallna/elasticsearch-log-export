@@ -26,6 +26,13 @@ module.exports = function (bucket, accessKey, secretKey) {
             });
         },
 
+        pipeObject: function(key, stream) {
+            this.s3.getObject({
+                Bucket: this.bucket,
+                Key: key
+            }).createReadStream().pipe(stream);;
+        },
+
         setMetadata: function(object, metadata) {
             this.s3.putObject({
                 Bucket: this.bucket,
