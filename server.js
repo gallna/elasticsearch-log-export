@@ -3,7 +3,7 @@ var url = require('url');
 var S3 = require('./s3.js');
 var Processor = require('./processor/accessLog.js');
 var Handler = require('./handler.js');
-var ListHandler = require('./handler.js');
+var ListHandler = require('./list-handler.js');
 var ObjectHandler = require('./handler/base-handler.js');
 var Elasticsearch = require('./elasticsearch.js');
 
@@ -13,8 +13,10 @@ const PORT=8089;
 var elasticsearchConfig = function (params) {
     var config = {
         endpoint: "elasticsearch",
+        port: 9200,
         indexName: "index-name",
-        typeName: "type-name"
+        typeName: "type-name",
+        chunkSize: 2000
     };
     for (var param in params) {
         config[param] = params[param];
@@ -22,11 +24,22 @@ var elasticsearchConfig = function (params) {
     return config;
 };
 
+function exportList (bucket, prefix, host, uri) {
+    var handler = new ListHandler(
+        new S3(bucket, process.env.ACCESS_KEY_ID, process.env.SECRET_ACCESS_KEY),
+        "export",
+        host,
+        uri
+    );
+    handler.handle(prefix);
+}
+
 function exportFromS3 (bucket, prefix, esConfig) {
-    var s3 = new S3(bucket, process.env.ACCESS_KEY_ID, process.env.SECRET_ACCESS_KEY);
-    var elasticsearch = new Elasticsearch(esConfig);
-    var processor = new Processor(elasticsearch);
-    var handler = new Handler(s3, processor, ObjectHandler);
+    var handler = new Handler(
+        new S3(bucket, process.env.ACCESS_KEY_ID, process.env.SECRET_ACCESS_KEY),
+        new Processor(esConfig, new Elasticsearch(esConfig)),
+        ObjectHandler
+    );
     handler.handle(prefix);
 }
 
@@ -36,6 +49,13 @@ function handleRequest(request, response){
     var pathname = uri.pathname.split("/");
 
     switch(pathname[1]) {
+        case 'list':
+            var bucket = pathname[2];
+            var prefix = pathname.slice(3).join("/")
+            response.end('Exporting: '+ bucket +':' + pathname.slice(2).join("/"));
+            exportList(bucket, prefix, request.headers.host, uri);
+
+            break;
         case 'export':
             var bucket = pathname[2];
             var prefix = pathname.slice(3).join("/")
