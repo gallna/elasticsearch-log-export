@@ -12,7 +12,7 @@ module.exports = function (object, s3, processor) {
         }
     };
 
-    this.handle = function() {
+    this.handle = function(callback) {
         console.log("Processing " + object.Key);
         var gunzip = zlib.createGunzip();
         s3.pipeObject(object.Key, gunzip);
@@ -24,7 +24,10 @@ module.exports = function (object, s3, processor) {
             processor.process(chunk, context);
             //buffer.push(data.toString())
 
-        //}).on("end", function() {
+        }).on("end", function() {
+            s3 = null;
+            processor = null;
+            callback(true);
             // response and decompression complete, join the buffer and return
             //callback(null, buffer.join(""));
 

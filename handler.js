@@ -1,6 +1,15 @@
+var ObjectHandler = require('./handler/base-handler.js');
 
+var S3 = require('./s3.js');
+var Processor = require('./processor/accessLog.js');
+var ObjectHandler = require('./handler/base-handler.js');
+var Elasticsearch = require('./elasticsearch.js');
 
-module.exports = function(s3, processor) {
+module.exports = function(bucket, esConfig) {
+    var s3 = new S3(bucket);
+    var es = null;
+    var processor = null;
+    var objHandler = null;
     this.handle = function(prefix) {
         console.log("Prefix: '" + prefix);
         s3.listObjects(prefix, this.processList);
@@ -13,12 +22,18 @@ module.exports = function(s3, processor) {
         } else {
             console.log("Recieved '" + data.Name + "." + data.Prefix + "' list ");
             //data.Contents.forEach(this.processObject);
-            data.Contents.forEach(function(object) {
-                var ObjectHandler = require('./handler/base-handler.js');
-                var objHandler = new ObjectHandler(object, s3, processor);
-                objHandler.handle();
-                objHandler = null;
-            });
+            var callback = function () {
+                if (data.Contents.length) {
+                    var object = data.Contents.shift();
+                    console.log("Shifted: '" + object.Key);
+                    s3 = new S3(bucket);
+                    es = new Elasticsearch(esConfig);
+                    processor = new Processor(esConfig, es);
+                    objHandler = new ObjectHandler(object, s3, processor);
+                    objHandler.handle(callback);
+                }
+            };
+            callback();
         }
     };
 
@@ -28,3 +43,4 @@ module.exports = function(s3, processor) {
         objectHandler.processObject(object);
     };
 };
+

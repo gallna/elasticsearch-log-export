@@ -1,11 +1,20 @@
+// var memwatch = require('memwatch');
+// var heapdump = require('heapdump');
+
+// memwatch.on('leak', function(info) {
+//     console.error(info);
+    // var file = '/tmp/myapp-' + process.pid + '-' + Date.now() + '.heapsnapshot';
+    // heapdump.writeSnapshot(file, function(err){
+    //     if (err) console.error(err);
+    //     else console.error('Wrote snapshot: ' + file);
+    // });
+// });
+
 var http = require('http');
 var url = require('url');
-var S3 = require('./s3.js');
-var Processor = require('./processor/accessLog.js');
+
 var Handler = require('./handler.js');
 var ListHandler = require('./list-handler.js');
-var ObjectHandler = require('./handler/base-handler.js');
-var Elasticsearch = require('./elasticsearch.js');
 
 //Lets define a port we want to listen to
 const PORT=8089;
@@ -25,6 +34,7 @@ var elasticsearchConfig = function (params) {
 };
 
 function exportList (bucket, prefix, host, uri) {
+    var S3 = require('./s3.js');
     var handler = new ListHandler(
         new S3(bucket, process.env.ACCESS_KEY_ID, process.env.SECRET_ACCESS_KEY),
         "export",
@@ -35,10 +45,7 @@ function exportList (bucket, prefix, host, uri) {
 }
 
 function exportFromS3 (bucket, prefix, esConfig) {
-    var handler = new Handler(
-        new S3(bucket, process.env.ACCESS_KEY_ID, process.env.SECRET_ACCESS_KEY),
-        new Processor(esConfig, new Elasticsearch(esConfig))
-    );
+    var handler = new Handler(bucket, esConfig);
     return handler.handle(prefix);
 }
 
